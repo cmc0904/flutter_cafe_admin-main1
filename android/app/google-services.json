@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "472974508286",
+    "project_id": "flutter-afterschool",
+    "storage_bucket": "flutter-afterschool.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:472974508286:android:219841ad95cb909935e5af",
+        "android_client_info": {
+          "package_name": "com.example.flutter_cafe_admin"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDIPYKwrRaxGR72ts8taLdhRDNpowIomw0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
