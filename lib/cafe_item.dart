@@ -319,10 +319,47 @@ class CafeItemAddForm extends StatefulWidget {
 class _CafeItemAddFormState extends State<CafeItemAddForm> {
   late String categoryId;
   String? itemId;
+
   TextEditingController controllerTitle = TextEditingController();
   TextEditingController controllerPrice = TextEditingController();
   TextEditingController controllerDesc = TextEditingController();
   bool isSoldOut = false;
+
+  TextEditingController controllerOptionName = TextEditingController();
+  TextEditingController controllerOptionValue = TextEditingController();
+  var options = [];
+
+  dynamic optionList = const Text("");
+
+  void showOptionList() {
+    setState(() {
+      optionList = ListView.separated(
+        itemBuilder: (context, index) {
+          var title = options[index]['optionName'];
+          var subTitle =
+              options[index]['optionValue'].toString().replaceAll('\n', ' / ');
+          return ListTile(
+            title: Text(title),
+            subtitle: Text(subTitle),
+            trailing: IconButton(
+                onPressed: () {
+                  options.removeAt(index);
+                  showOptionList();
+                },
+                icon: const Icon(
+                  Icons.close,
+                  color: Colors.red,
+                )),
+          );
+        },
+        separatorBuilder: (context, index) => const Divider(),
+        itemCount: options.length,
+      );
+    });
+
+    controllerOptionName.clear();
+    controllerOptionValue.clear();
+  }
 
   @override
   void initState() {
@@ -344,7 +381,9 @@ class _CafeItemAddFormState extends State<CafeItemAddForm> {
                 'itemName': controllerTitle.text,
                 'itemPrice': int.parse(controllerPrice.text),
                 'itemDesc': controllerDesc.text,
-                'itemIsSoldOut': isSoldOut
+                'itemIsSoldOut': isSoldOut,
+                'optionList': options,
+                'categoryId': categoryId
               };
 
               var result = await myCafe.insert(
@@ -374,6 +413,7 @@ class _CafeItemAddFormState extends State<CafeItemAddForm> {
             decoration: const InputDecoration(
               label: Text("가격"),
             ),
+            keyboardType: TextInputType.number,
           ),
           TextFormField(
             maxLines: 1,
@@ -390,6 +430,28 @@ class _CafeItemAddFormState extends State<CafeItemAddForm> {
               });
             },
             title: const Text("매진 여부"),
+          ),
+          Expanded(child: optionList),
+          IconButton(
+            onPressed: () {
+              var optionName = controllerOptionName.text;
+              var optionValue = controllerOptionValue.text;
+
+              if (optionName != '' && optionValue != '') {
+                print(options);
+                options.add(
+                    {'optionName': optionName, 'optionValue': optionValue});
+                showOptionList();
+              }
+            },
+            icon: const Icon(Icons.arrow_circle_up),
+          ),
+          TextFormField(
+            controller: controllerOptionName,
+          ),
+          TextFormField(
+            controller: controllerOptionValue,
+            maxLines: 10,
           )
         ],
       ),
