@@ -277,14 +277,39 @@ class _CafeItemListState extends State<CafeItemList> {
                   title: Text('${item['itemName']} (${item['itemPrice']})'),
                   subtitle: Text('${item['optionList']}'),
                   trailing: PopupMenuButton(
+                    onSelected: (value) async {
+                      switch (value) {
+                        case 'modify':
+                          var result = await Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => CafeItemAddForm(
+                                    categoryId: item['categoryId'],
+                                    itemId: item.id),
+                              ));
+                          if (result == true) {
+                            setState(() {
+                              getItemList(categoryId: id);
+                            });
+                          }
+                          break;
+                        case 'delete':
+                          var data = await myCafe.delete(
+                              collectionName: 'cafe-item', id: item.id);
+
+                          if (data) {
+                            getItemList(categoryId: id);
+                          }
+                          break;
+                      }
+                    },
                     itemBuilder: (context) => [
-                      PopupMenuItem(
-                        child: const Text("수정"),
-                        onTap: () async {
-                          print('수정');
-                        },
+                      const PopupMenuItem(
+                        value: "modify",
+                        child: Text("수정"),
                       ),
                       PopupMenuItem(
+                        value: "delete",
                         child: const Text("삭제"),
                         onTap: () async {
                           var data = await myCafe.delete(
@@ -438,6 +463,32 @@ class _CafeItemAddFormState extends State<CafeItemAddForm> {
     super.initState();
     categoryId = widget.categoryId;
     itemId = widget.itemId;
+
+    if (itemId != null) {
+      getItemById(itemId);
+    }
+  }
+
+  void getItemById(itemId) async {
+    var data = await myCafe.get(collectionName: itemCollectionName, id: itemId);
+
+    controllerTitle.text = data['itemName'];
+    controllerPrice.text = data['itemPrice'].toString();
+    controllerDesc.text = data['itemDesc'];
+    isSoldOut = data['itemIsSoldOut'];
+
+    if (data['optionList'].length != 0) {
+      for (var o in data['optionList']) {
+        options.add(
+            {'optionName': o['optionName'], 'optionValue': o['optionValue']});
+      }
+
+      setState(() {
+        showOptionList();
+      });
+    }
+
+    return;
   }
 
   @override
@@ -457,8 +508,17 @@ class _CafeItemAddFormState extends State<CafeItemAddForm> {
                 'categoryId': categoryId
               };
 
-              var result = await myCafe.insert(
-                  collectionName: itemCollectionName, data: data);
+              var result = itemId != null
+                  ? await myCafe.update(
+                      collectionName: itemCollectionName,
+                      id: itemId!,
+                      data: data,
+                    )
+                  : await myCafe.insert(
+                      collectionName: itemCollectionName, data: data);
+
+              // var result1 = await myCafe.insert(
+              //     collectionName: itemCollectionName, data: data);
 
               if (result) {
                 Navigator.pop(context, true);
